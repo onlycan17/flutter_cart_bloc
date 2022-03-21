@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_cart_bloc/bloc/cart_bloc.dart';
+import 'package:flutter_cart_bloc/bloc/cart_provider.dart';
 import 'package:flutter_cart_bloc/src/catalog.dart';
 import 'package:flutter_cart_bloc/src/login_screen.dart';
 
@@ -8,15 +7,13 @@ void main() {
   runApp(MyApp());
 }
 
+//final cartBloc = CartBloc();
+
 class MyApp extends StatelessWidget {
   MyApp({Key? key}) : super(key: key);
-  //final _cartBloc = CartBloc();
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (BuildContext context) => CartBloc(),
+    return CartProvider(
       child: MaterialApp(
         title: 'Flutter Code Sample for material.Scaffold',
         theme: ThemeData(

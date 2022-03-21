@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_cart_bloc/bloc/cart_bloc.dart';
+import 'package:flutter_cart_bloc/bloc/cart_provider.dart';
 import 'package:flutter_cart_bloc/src/item.dart';
 import 'package:flutter_cart_bloc/src/my_cart.dart';
 
@@ -12,11 +12,9 @@ class MyCatalog extends StatefulWidget {
 }
 
 class _MyCatalogState extends State<MyCatalog> {
-  final List<Item> _itemList = itemList;
-
   @override
   Widget build(BuildContext context) {
-    final _cartBloc = BlocProvider.of<CartBloc>(context);
+    CartBloc? cartBloc = CartProvider.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Text('Catalog'),
@@ -29,22 +27,23 @@ class _MyCatalogState extends State<MyCatalog> {
               icon: Icon(Icons.archive)),
         ],
       ),
-      body: BlocBuilder<CartBloc, List<Item>>(
-        builder: (BuildContext context, List state) {
-          return Center(
-            child: ListView(
-              children: _itemList
-                  .map((item) => _buildItem(item, state, _cartBloc))
-                  .toList(),
-            ),
-          );
-        },
-        bloc: _cartBloc,
-      ),
+      body: StreamBuilder(
+          stream: cartBloc!.cartList,
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return ListView(
+                children: cartBloc.itemList
+                    .map((item) =>
+                        _buildItem(item, snapshot.data as List<Item>, cartBloc))
+                    .toList(),
+              );
+            }
+            return CircularProgressIndicator();
+          }),
     );
   }
 
-  Widget _buildItem(Item todo, List state, CartBloc bloc) {
+  Widget _buildItem(Item todo, List<Item> state, CartBloc cartBloc) {
     final isChecked = state.contains(todo);
     return Padding(
       padding: const EdgeInsets.all(8),
@@ -52,13 +51,11 @@ class _MyCatalogState extends State<MyCatalog> {
         subtitle: Text('${todo.price}'),
         trailing: IconButton(
           onPressed: () {
-            setState(() {
-              if (isChecked) {
-                bloc.add(CartEvent(CartEventType.remove, todo));
-              } else {
-                bloc.add(CartEvent(CartEventType.add, todo));
-              }
-            });
+            if (isChecked) {
+              cartBloc.add(CartEvent(CartEventType.remove, todo));
+            } else {
+              cartBloc.add(CartEvent(CartEventType.add, todo));
+            }
           },
           icon: isChecked
               ? Icon(
